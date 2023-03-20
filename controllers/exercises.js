@@ -78,7 +78,7 @@ const editExerciseController = async (req, res, next) => {
   try {
     let { name, description, category, img } = req.body;
     const { id } = req.params;
-    // Si falta el nombre lanzamos un error.
+    // Si falta el nombre, la categoria o la descripción lanzamos un error.
     if (!name && !category && !description) {
       generateError('Faltan campos', 400);
     }

@@ -61,13 +61,18 @@ const getAllExercises = async (category = '') => {
 
     const [result] = await connection.query(
       `
-    SELECT * FROM exercises WHERE category LIKE ? ORDER BY createdAt
+    SELECT E.*, L.countLikes AS likes 
+    FROM exercises E 
+    INNER JOIN 
+  	  (SELECT COUNT(*) as countLikes,idExercise
+	    FROM likes  GROUP BY idExercise )
+    L ON L.idExercise = E.id 
+    WHERE category LIKE ? ORDER BY createdAt
     `,
       [`${category}%`]
     );
-
-    if (result.lenght === 0) {
-      return 'No hay ejercicios con esa categoria';
+    if (category.length > 0 && result.length === 0) {
+      generateError('La categoria no existe', 404);
     }
     return result;
   } finally {
@@ -86,7 +91,7 @@ const updateExercise = async (name, category, description, img, exerciseId) => {
     if (name) {
       const [exercises] = await connection.query(
         `
-                SELECT id FROM exercises WHERE name = ?`,
+                SELECT id FROM exercises WHERE name = ? AND id !=?`,
         [name, exerciseId]
       );
 
@@ -95,47 +100,9 @@ const updateExercise = async (name, category, description, img, exerciseId) => {
         generateError('Nombre de ejerciciso no disponible', 403);
       }
 
-      await connection.query(`UPDATE exercises SET name = ?  WHERE id = ?`, [
-        name,
-        exerciseId,
-      ]);
-    }
-
-    // Si recibimos un nombre de ejercicio comprobamos si ya está ocupado.
-    /*     if (category) {
-      const [exercises] = await connection.query(
-        `
-                SELECT id FROM exercises WHERE category = ?`,
-        [category, exerciseId]
-      );
-
-      // Si el nombre ya está ocupado lanzamos un error.
-      if (exercises.length > 0) {
-        generateError('Categoría de ejerciciso no disponible', 403);
-      }  */
-
-    await connection.query(`UPDATE exercises SET category = ?  WHERE id = ?`, [
-      category,
-      exerciseId,
-    ]);
-    // }
-
-    // comprobamos si la descripción existe.
-    if (description) {
-      const [exercises] = await connection.query(
-        `
-                SELECT id FROM exercises WHERE description = ?`,
-        [description, exerciseId]
-      );
-
-      // Si ya existe un ejercicio con esa descripción lanzamos un error.
-      if (exercises.length > 0) {
-        generateError('Ya existe un ejercicio con esa descripción', 403);
-      }
-
       await connection.query(
-        `UPDATE exercises SET description = ? WHERE id = ?`,
-        [description, exerciseId]
+        `UPDATE exercises SET name = ? , category = ?, description = ? WHERE id = ?`,
+        [name, category, description, exerciseId]
       );
     }
   } finally {

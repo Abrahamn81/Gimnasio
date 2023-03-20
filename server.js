@@ -18,6 +18,7 @@ const {
   getExercisesController,
   newExerciseController,
   getSingleExerciseController,
+  editExerciseController,
   deleteExerciseController,
 } = require('./controllers/exercises');
 
@@ -49,6 +50,7 @@ app.put('/user/:id', authUser, canEditUser, editUser);
 app.post('/exercise', authUser, isAdmin, newExerciseController);
 app.get('/exercise', getExercisesController);
 app.get('/exercise/:id', getSingleExerciseController);
+app.put('/exercise/:id', authUser, isAdmin, editExerciseController);
 app.delete('/exercise/:id', authUser, isAdmin, deleteExerciseController);
 
 //Rutas de likes

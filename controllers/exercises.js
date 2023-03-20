@@ -2,6 +2,7 @@ const {
   createExercise,
   getAllExercises,
   getExerciseById,
+  updateExercise,
   deleteExerciseById,
   //getExerciseByCategory,
 } = require('../db/exercises');
@@ -72,6 +73,28 @@ const getSingleExerciseController = async (req, res, next) => {
   }
 };
 
+// Modificar un ejercicio
+const editExerciseController = async (req, res, next) => {
+  try {
+    let { name, description, category, img } = req.body;
+    const { id } = req.params;
+    // Si falta el nombre lanzamos un error.
+    if (!name && !category && !description) {
+      generateError('Faltan campos', 400);
+    }
+
+    // Actualizamos el ejercicio.
+    await updateExercise(name, category, description, img, id);
+
+    res.send({
+      status: 'ok',
+      message: 'Ejercicio actualizado',
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // Borrar un ejercicio
 const deleteExerciseController = async (req, res, next) => {
   try {
@@ -97,5 +120,6 @@ module.exports = {
   getExercisesController,
   newExerciseController,
   getSingleExerciseController,
+  editExerciseController,
   deleteExerciseController,
 };
